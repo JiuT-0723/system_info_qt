@@ -44,19 +44,20 @@ class TerminalMonitor : public QObject {
     // 使用ANSI转义码控制显示位置
     QTextStream out(stdout);
     out << "\033[6;1H";
-    out << RESET << "* CPU 使用率: " << setColor(cpu_usage) << QString::number(cpu_usage, 'f', 2) << "% \033[7;1H";  // 移动到第7行第1列
+    out << RESET << "* CPU 使用率: " << setColor(cpu_usage) << QString::number(cpu_usage, 'f', 2) << "%           \033[7;1H";  // 移动到第7行第1列
 
     out << RESET << "* GPU 使用率: " << setColor(gpu_occupy_.usage) << QString::number(gpu_occupy_.usage) << "% " << RESET
-        << "| GPU 频率: " << QString::fromUtf8(gpu_occupy_.freq.c_str()) << "Hz \033[8;1H";  // 移动到第8行第1列
+        << "| GPU 频率: " << QString::fromUtf8(gpu_occupy_.freq.c_str()) << "Hz           \033[8;1H";  // 移动到第8行第1列
 
     out << RESET << "* NPU 使用率: 1: " << setColor(npu_occupy_.core0) << QString::number(npu_occupy_.core0) << "%" << RESET << " 2: " << setColor(npu_occupy_.core1)
-        << QString::number(npu_occupy_.core1) << "% " << RESET << "3: " << setColor(npu_occupy_.core2) << QString::number(npu_occupy_.core2) << "%\033[9;1H";  // 移动到第9行第1列
+        << QString::number(npu_occupy_.core1) << "% " << RESET << "3: " << setColor(npu_occupy_.core2) << QString::number(npu_occupy_.core2)
+        << "%           \033[9;1H";  // 移动到第9行第1列
 
     out << RESET << "* 内存 使用情况: " << setColor(mem_occupy_.usage) << QString::number(mem_occupy_.used, 'f', 2) << "GB / " << QString::number(mem_occupy_.total, 'f', 2)
-        << "GB " << RESET << " 使用率: " << setColor(mem_occupy_.usage) << QString::number(mem_occupy_.usage, 'f', 2) << "% \033[10;1H";  // 移动到第10行第1列
+        << "GB " << RESET << " 使用率: " << setColor(mem_occupy_.usage) << QString::number(mem_occupy_.usage, 'f', 2) << "%           \033[10;1H";  // 移动到第10行第1列
 
-    out << RESET << "* 核心温度: " << setColor(core_temp) << QString::number(core_temp, 'f', 2) << "°C \033[0K"  // 清除行尾
-        << "\033[11;1H" << RESET;                                                                                // 移动到命令输入行
+    out << RESET << "* 核心温度: " << setColor(core_temp) << QString::number(core_temp, 'f', 2) << "°C           \033[0K"  // 清除行尾
+        << "\033[11;1H" << RESET;                                                                                          // 移动到命令输入行
 
     // << "Command: ";
 
