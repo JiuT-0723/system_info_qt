@@ -22,15 +22,17 @@ struct cpu_occupy_t {
   uint64_t idle;
 };
 
-struct npu_occupy_t {
+struct npu_info_t {
   int core0;
   int core1;
   int core2;
+
+  uint64_t freq;
 };
 
 struct gpu_occupy_t {
   int usage;
-  std::string freq;
+  uint64_t freq;
 };
 
 struct mem_occupy_t {
@@ -41,12 +43,18 @@ struct mem_occupy_t {
   // int cached;
 };
 
+struct cpu_info_t {
+  float usage;
+  uint64_t freq[3];
+};
+
 class classSysInfo {
  public:
   classSysInfo();
   ~classSysInfo();
 
-  auto getCpuUsage() -> float;
+  auto getCpuInfo(cpu_info_t &cpu_info) -> int;
+
   /**
    * @brief 核心温度
    *
@@ -58,7 +66,7 @@ class classSysInfo {
    * @brief npu占用率
    *
    */
-  auto getNpuUsage(npu_occupy_t &npu_occupy) -> int;
+  auto getNpuInfo(npu_info_t &npu_occupy) -> int;
 
   /**
    * @brief gpu 占用率
@@ -73,6 +81,8 @@ class classSysInfo {
    */
 
   auto getMemUsage(mem_occupy_t &mem_occupy) -> int;
+
+  auto getDDRFreq() -> uint64_t;
 
  private:
   /**

@@ -9,7 +9,27 @@ using namespace jiut;
 classSysInfo::classSysInfo() { run(); }
 classSysInfo::~classSysInfo() {}
 
-auto classSysInfo::getCpuUsage() -> float { return cpu_usage_; }
+auto classSysInfo::getCpuInfo(cpu_info_t &cpu_info) -> int {
+  cpu_info.usage = cpu_usage_;
+  int n = 0;
+  for (int i = 0; i < 8; i += 2) {
+    if (i == 0 || i == 4 || i == 6) {
+      std::string filePath = "/sys/devices/system/cpu/cpufreq/policy" + std::to_string(i) + "/scaling_cur_freq";
+      std::ifstream file(filePath);
+      if (!file.is_open()) {
+        return -1;
+      }
+      std::stringstream buffer;
+      buffer << file.rdbuf();
+      file.close();
+      // 将 stringstream 的内容转换为 std::string
+      std::string fileContent = buffer.str();
+      cpu_info.freq[n] = atoi(fileContent.c_str());
+      n++;
+    }
+  }
+  return 0;
+}
 
 auto classSysInfo::calcCpuTotalOccupy(cpu_occupy_t &cpu_occupy) -> int {
   FILE *fd;
@@ -45,7 +65,7 @@ auto classSysInfo::getCoreTemp() -> float {
   return temperature_all / 7000.0;
 }
 
-auto classSysInfo::getNpuUsage(npu_occupy_t &npu_occupy) -> int {
+auto classSysInfo::getNpuInfo(npu_info_t &npu_info) -> int {
   char buff[128] = {0};
   FILE *fd;
 
@@ -58,7 +78,15 @@ auto classSysInfo::getNpuUsage(npu_occupy_t &npu_occupy) -> int {
   std::string str(buff);
   // 去除str内的所有%
   str.erase(std::remove(str.begin(), str.end(), '%'), str.end());
-  sscanf(str.c_str(), "NPU load:  Core0:  %d, Core1:  %d, Core2:  %d,", &npu_occupy.core0, &npu_occupy.core1, &npu_occupy.core2);
+  sscanf(str.c_str(), "NPU load:  Core0:  %d, Core1:  %d, Core2:  %d,", &npu_info.core0, &npu_info.core1, &npu_info.core2);
+
+  fd = fopen("/sys/kernel/debug/rknpu/freq", "r");
+  if (fd == nullptr) {
+    return -1;
+  }
+  fgets(buff, sizeof(buff), fd);
+  fclose(fd);
+  npu_info.freq = atoi(buff);
   return 0;
 }
 
@@ -76,7 +104,7 @@ auto classSysInfo::getGpuUsage(gpu_occupy_t &gpu_occupy) -> int {
 
   size_t pos = fileContent.find("@");
   gpu_occupy.usage = atoi(fileContent.substr(0, pos).c_str());
-  gpu_occupy.freq = fileContent.substr(pos + 1, fileContent.find("Hz") - pos - 1);
+  gpu_occupy.freq = atoi(fileContent.substr(pos + 1, fileContent.find("Hz") - pos - 1).c_str());
 
   return 0;
 }
@@ -100,6 +128,20 @@ auto classSysInfo::getMemUsage(mem_occupy_t &mem_occupy) -> int {
   mem_occupy.used = (total_mem - available_mem) / 1024.0 / 1024.0;
   mem_occupy.usage = float(total_mem - available_mem) / (float)total_mem * 100.0;
   return 0;
+}
+
+auto classSysInfo::getDDRFreq() -> uint64_t {
+  std::string filePath = "/sys/class/devfreq/dmc/cur_freq";
+  std::ifstream file(filePath);
+  if (!file.is_open()) {
+    return -1;
+  }
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  file.close();
+  // 将 stringstream 的内容转换为 std::string
+  std::string fileContent = buffer.str();
+  return atoi(fileContent.c_str());
 }
 
 auto classSysInfo::run() -> void {

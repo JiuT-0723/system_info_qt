@@ -18,10 +18,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core LinguistTools)
 
 set(TS_FILES sys_info_zh_CN.ts)
 
-# 算法功能库头文件路径
-set(ALGORITHM_FUNC_LIB_DIR ${CMAKE_CURRENT_LIST_DIR}/../JiuT_dev/algorithm_func_lib)
-set(ALGORITHM_FUNC_LIB_INCLUDE_PATH ${ALGORITHM_FUNC_LIB_DIR}/include)
-
 include_directories(
   sys_info
 )
@@ -32,7 +28,7 @@ add_executable(sys_info
   sys_info/sys_info.cpp
   ${TS_FILES}
 )
-target_link_libraries(sys_info Qt${QT_VERSION_MAJOR}::Core system_info)
+target_link_libraries(sys_info Qt${QT_VERSION_MAJOR}::Core)
 
 if(COMMAND qt_create_translation)
     qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
